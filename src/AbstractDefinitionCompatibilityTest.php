@@ -19,6 +19,14 @@ abstract class AbstractDefinitionCompatibilityTest extends \PHPUnit_Framework_Te
      */
     abstract protected function getContainer(DefinitionProviderInterface $definitionProvider);
 
+    /**
+     * Returns true if the tested container should be tested against defensive programming tests.
+     * Returns false if the tested container should not be tested against defensive programming tests.
+     *
+     * @return boolean
+     */
+    abstract protected function shouldRunDefensiveProgrammingTests();
+
     public function testInstance()
     {
         $referenceDefinition = new \Assembly\ObjectDefinition('\\stdClass');
@@ -41,6 +49,7 @@ abstract class AbstractDefinitionCompatibilityTest extends \PHPUnit_Framework_Te
     }
 
     /**
+     * Defensive programming test.
      * Invalid objects (objects not extending one of the xxxDefinitionInterface interfaces) should trigger
      * an exception.
      *
@@ -48,6 +57,10 @@ abstract class AbstractDefinitionCompatibilityTest extends \PHPUnit_Framework_Te
      */
     public function testParameterException()
     {
+        if (!$this->shouldRunDefensiveProgrammingTests()) {
+            throw new \Exception();
+        }
+
         $assemblyDefinition = new \Assembly\ObjectDefinition('Interop\Container\Definition\Test\Fixtures\\Test');
         $assemblyDefinition->addConstructorArgument(new \stdClass());
 
@@ -121,10 +134,16 @@ abstract class AbstractDefinitionCompatibilityTest extends \PHPUnit_Framework_Te
     }
 
     /**
+     * Defensive programming test.
+     *
      * @expectedException \Exception
      */
     public function testUnsupportedDefinition()
     {
+        if (!$this->shouldRunDefensiveProgrammingTests()) {
+            throw new \Exception();
+        }
+
         $definition = new UnsupportedDefinition();
 
         $container = $this->getContainer(new ArrayDefinitionProvider([
